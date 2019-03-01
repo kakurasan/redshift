@@ -2,6 +2,7 @@ redshift_libs = []
 redshift_deps = [m_dep, intl_dep]
 include_dirs = [configuration_inc]
 
+libredshift_common_deps = []
 libredshift_common_sources = files(
   'colorramp.c',
   'colorramp.h',
@@ -29,6 +30,28 @@ redshift_sources = files(
   'systemtime.c',
   'systemtime.h',
 )
+
+if config_h.has('ENABLE_WAYLAND')
+  libredshift_common_sources += files(
+    'gamma-wl.c', 'gamma-wl.h', 'os-compatibility.c', 'os-compatibility.h')
+  redshift_deps += [wl_client_dep, wl_scanner_dep]
+  wl_scanner_action = wl_priv_code_supported ? 'private-code' : 'code'
+  wl_proto_c_gen = generator(wl_scanner,
+    arguments : [wl_scanner_action, '@INPUT@', '@OUTPUT@'],
+    output : '@BASENAME@-protocol.c',
+  )
+  wl_proto_h_gen = generator(wl_scanner,
+    arguments : ['client-header', '@INPUT@', '@OUTPUT@'],
+    output : '@BASENAME@-client-protocol.h',
+  )
+  wl_generated_sources = []
+  foreach xml : ['gamma-control.xml', 'orbital-authorizer.xml']
+    wl_generated_sources += wl_proto_c_gen.process(xml)
+    wl_generated_sources += wl_proto_h_gen.process(xml)
+  endforeach
+  # gamma-wl.c depends on generated files.
+  libredshift_common_deps += declare_dependency(sources : wl_generated_sources)
+endif
 
 if config_h.has('ENABLE_DRM')
   libredshift_common_sources += files('gamma-drm.c', 'gamma-drm.h')
@@ -83,7 +106,7 @@ endif
 
 libredshift_common = static_library('libredshift_common',
   libredshift_common_sources,
-  dependencies : redshift_deps,
+  dependencies : [libredshift_common_deps, redshift_deps],
   include_directories : include_dirs,
 )
 redshift_libs += libredshift_common

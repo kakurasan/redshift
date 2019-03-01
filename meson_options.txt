@@ -5,6 +5,12 @@ option(
   description : 'NLS support'
 )
 option(
+  'wayland',
+  type : 'feature',
+  value : 'auto',
+  description : 'Wayland (wlroots) method'
+)
+option(
   'drm',
   type : 'feature',
   value : 'auto',

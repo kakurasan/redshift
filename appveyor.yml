@@ -20,6 +20,7 @@ install:
 before_build:
 - ps: |
     $env:CONF_FLAGS = "--prefix=${env:APPVEYOR_BUILD_FOLDER}\root"
+    $env:CONF_FLAGS += " -Dwayland=disabled"
     $env:CONF_FLAGS += " -Ddrm=disabled -Drandr=disabled -Dvidmode=disabled"
     $env:CONF_FLAGS += " -Dwingdi=enabled -Dquartz=disabled"
     $env:CONF_FLAGS += " -Dgeoclue2=disabled -Dcorelocation=disabled"

@@ -87,6 +87,29 @@ config_build = configuration_data()
 
 null_dep = disabler()
 
+# Check Wayland method
+wl_scanner_dep = null_dep
+wl_client_dep = dependency('wayland-client', required : get_option('wayland'))
+wl_priv_code_supported = false
+if wl_client_dep.found()
+  # Check whether "private-code" is supported (1.15.0 or later)
+  # https://lists.freedesktop.org/archives/wayland-devel/2018-April/037767.html
+  wl_scanner_dep = dependency(
+    'wayland-scanner', version : '>= 1.15.0', required : false)
+  if wl_scanner_dep.found()
+    wl_priv_code_supported = true
+  else
+    # If found, "private-code" is not supported (older than 1.15.0)
+    wl_scanner_dep = dependency('wayland-scanner')
+  endif
+endif
+if wl_scanner_dep.found()
+  wl_scanner = find_program('wayland-scanner')
+  if wl_scanner.found()
+    config_h.set('ENABLE_WAYLAND', 1)
+  endif
+endif
+
 # Check DRM method
 drm_dep = dependency('libdrm', required : get_option('drm'))
 if drm_dep.found()
@@ -208,21 +231,23 @@ message('''@0@ @1@
 
     Adjustment methods:
     DRM:		@3@
-    RANDR:		@4@
-    VidMode:		@5@
-    Quartz (macOS):	@6@
-    WinGDI (Windows):	@7@
+    Wayland:		@4@
+    RANDR:		@5@
+    VidMode:		@6@
+    Quartz (macOS):	@7@
+    WinGDI (Windows):	@8@
 
     Location providers:
-    Geoclue2:			@8@
-    CoreLocation (macOS):	@9@
+    Geoclue2:			@9@
+    CoreLocation (macOS):	@10@
 
-    GUI:		@10@
-    Ubuntu icons:	@11@
-    systemd units:	@12@ @13@
-    AppArmor profile:   @14@
+    GUI:		@11@
+    Ubuntu icons:	@12@
+    systemd units:	@13@ @14@
+    AppArmor profile:   @15@
 '''.format(proj_name, proj_version, get_option('prefix'),
   config_h.has('ENABLE_DRM') ? 'yes' : 'no',
+  config_h.has('ENABLE_WAYLAND') ? 'yes' : 'no',
   config_h.has('ENABLE_RANDR') ? 'yes' : 'no',
   config_h.has('ENABLE_VIDMODE') ? 'yes' : 'no',
   config_h.has('ENABLE_QUARTZ') ? 'yes' : 'no',
