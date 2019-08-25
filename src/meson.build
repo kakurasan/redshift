@@ -64,7 +64,7 @@ endif
 # library since it is using a separate compiler
 # (Objective C).
 if config_h.has('ENABLE_CORELOCATION')
-  redshift_libs += static_library('libredshift_corelocation',
+  redshift_libs += static_library('redshift_corelocation',
     ['location-corelocation.m', 'location-corelocation.h'],
     include_directories : include_dirs,
   )
@@ -81,7 +81,7 @@ if host_machine.system() == 'windows'
   redshift_sources += win_resources
 endif
 
-libredshift_common = static_library('libredshift_common',
+libredshift_common = static_library('redshift_common',
   libredshift_common_sources,
   dependencies : redshift_deps,
   include_directories : include_dirs,
